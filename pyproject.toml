@@ -1,0 +1,14 @@
+[project]
+name = "djangoforai"
+version = "0.1.0"
+description = "Django AI Chat with Ollama and HTMX"
+dependencies = [
+    "django>=5.0",
+    "httpx>=0.25.0",
+    "markdown>=3.5",
+]
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

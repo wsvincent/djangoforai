@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ conversation.title }} - Gemma 3 4B Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <!-- Header -->
+    <div class="chat-header">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'homepage' %}" class="btn btn-outline-secondary back-btn me-3">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h5 class="mb-0" style="color: #8b5a3c;">{{ conversation.title }}</h5>
+                        <small class="text-muted">{{ messages.count }} messages</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width: 32px; height: 32px; background-color: #8b5a3c; border-radius: 8px;" class="d-flex align-items-center justify-content-center text-white me-2">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <span style="color: #8b5a3c; font-weight: 500;">Gemma 3 4B</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="chat-messages" class="chat-messages"
+         hx-on::after-swap="this.scrollTop = this.scrollHeight; hljs.highlightAll();">
+        {% for msg_data in messages_with_content %}
+            {% with message=msg_data.original formatted_content=msg_data.formatted_content %}
+                {% if message.is_user %}
+                    <div class="d-flex justify-content-end mb-3 fade-in">
+                        <div class="message-bubble user-message rounded-3 px-3 py-2">
+                            <div class="mb-1">{{ formatted_content|safe }}</div>
+                            <small class="opacity-75">{{ message.timestamp|date:"g:i A" }}</small>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="d-flex justify-content-start mb-3 fade-in">
+                        <div class="me-2">
+                            <div class="ai-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold">
+                                G3
+                            </div>
+                        </div>
+                        <div class="message-bubble ai-message rounded-3 px-3 py-2">
+                            <div class="mb-1 markdown-content">{{ formatted_content|safe }}</div>
+                            <small class="text-muted">{{ message.timestamp|date:"g:i A" }} • Gemma 3 4B</small>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+
+        <!-- Thinking indicator -->
+        <div class="thinking-indicator">
+            <div class="d-flex justify-content-start mb-3">
+                <div class="me-2">
+                    <div class="ai-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold">
+                        G3
+                    </div>
+                </div>
+                <div class="message-bubble ai-message rounded-3 px-3 py-2">
+                    <div class="thinking-dots">
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Input -->
+    <div class="border-top p-3 bg-white position-fixed bottom-0 w-100">
+        <div class="container-fluid">
+            <form hx-post="{% url 'chat' conversation.id %}"
+                  hx-target="#chat-messages"
+                  hx-swap="beforeend"
+                  hx-on::after-request="if(event.detail.successful) this.reset()"
+                  class="d-flex">
+                {% csrf_token %}
+
+                <div class="input-group">
+                    <input type="text"
+                           name="message"
+                           class="form-control border-0 bg-light"
+                           placeholder="Message Gemma 3 4B..."
+                           required
+                           autocomplete="off"
+                           style="border: 1px solid #d0c7be !important;">
+                    <button type="submit" class="btn btn-primary send-btn">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        hljs.highlightAll();
+        document.body.addEventListener('htmx:afterSwap', function(evt) {
+            hljs.highlightAll();
+        });
+
+        // Auto-scroll to bottom on page load
+        document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+        
+        // Check if we need to trigger streaming for first response (when coming from homepage)
+        {% if messages.count == 1 and messages.first.is_user %}
+        window.addEventListener('load', function() {
+            const lastMessage = {{ messages.first.id }};
+            const eventSource = new EventSource('/chat/{{ conversation.id }}/stream/?message_id=' + lastMessage);
+            
+            // Create AI response placeholder
+            const chatMessages = document.getElementById('chat-messages');
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'd-flex justify-content-start mb-3 fade-in';
+            aiDiv.innerHTML = `
+                <div class="me-2">
+                    <div class="ai-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold">
+                        G3
+                    </div>
+                </div>
+                <div class="message-bubble ai-message rounded-3 px-3 py-2">
+                    <div class="mb-1 text-break markdown-content" id="ai-content-${lastMessage}"></div>
+                    <small class="text-muted" id="ai-timestamp-${lastMessage}"></small>
+                </div>
+            `;
+            chatMessages.appendChild(aiDiv);
+            
+            let aiContent = '';
+            const contentDiv = document.getElementById('ai-content-' + lastMessage);
+            const timestampDiv = document.getElementById('ai-timestamp-' + lastMessage);
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'token') {
+                    aiContent += data.content;
+                    contentDiv.textContent = aiContent;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } else if (data.type === 'done') {
+                    timestampDiv.innerHTML = data.timestamp + ' • Gemma 3 4B';
+                    eventSource.close();
+                    // Convert markdown to HTML
+                    fetch('/chat/{{ conversation.id }}/render-markdown/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({content: aiContent})
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        contentDiv.innerHTML = html;
+                        hljs.highlightAll();
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    });
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                console.error('SSE error:', event);
+                eventSource.close();
+                contentDiv.innerHTML = '<em>Error: Connection lost</em>';
+            };
+        });
+        {% endif %}
+    </script>
+</body>
+</html>
