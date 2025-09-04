@@ -77,7 +77,10 @@ class StreamChatView(SingleObjectMixin, View):
                     conversation, full_response
                 )
                 # Send completion signal
-                yield f"data: {json.dumps({'type': 'done', 'timestamp': ai_message.timestamp.strftime('%I:%M %p')})}\n\n"
+                # Convert to local timezone and format to match Django templates (g:i A format)
+                local_time = ai_message.timestamp.astimezone()
+                timestamp_str = local_time.strftime('%I:%M %p').lstrip('0').replace(' 0', ' ')
+                yield f"data: {json.dumps({'type': 'done', 'timestamp': timestamp_str})}\n\n"
             else:
                 yield f"data: {json.dumps({'type': 'error', 'content': ERROR_MESSAGES['NO_RESPONSE']})}\n\n"
 
