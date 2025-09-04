@@ -102,13 +102,13 @@ class ChatView(DetailView):
 
     def post(self, request, conversation_id):
         """Handle new messages in existing chat - returns HTML with SSE endpoint info"""
-        self.object = self.get_object()
-        conversation = self.object
         message_content = request.POST.get("message", "").strip()
-        
+
         if not message_content:
             return HttpResponse(ERROR_MESSAGES["EMPTY_MESSAGE"], status=400)
-        
+
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+
         # Save user message using service
         user_message = ConversationService.add_user_message(
             conversation, message_content
@@ -124,7 +124,7 @@ class ChatView(DetailView):
             <div class="d-flex justify-content-end mb-3 fade-in">
                 <div class="message-bubble user-message rounded-3 px-3 py-2">
                     <div class="mb-1">{user_formatted}</div>
-                    <small class="opacity-75">{user_message.timestamp.strftime("%I:%M %p")}</small>
+                    <small class="opacity-75">{user_message.timestamp.astimezone().strftime('%I:%M %p').lstrip('0').replace(' 0', ' ')}</small>
                 </div>
             </div>
 
