@@ -63,13 +63,22 @@ DjangoForAI/
 │   ├── models.py          # Conversation and Message models
 │   ├── views.py           # Main view logic using Django CBVs
 │   ├── views_stream.py    # SSE streaming implementation
+│   ├── services.py        # Business logic for Ollama API and conversations
+│   ├── forms.py           # Django forms for message validation
+│   ├── constants.py       # Configuration constants and settings
+│   ├── exceptions.py      # Custom exception classes
 │   ├── urls.py            # URL routing
+│   ├── admin.py           # Django admin configuration
 │   └── migrations/        # Database migrations
 ├── templates/
 │   ├── homepage.html      # Landing page with recent chats
 │   └── chat.html          # Chat interface
+├── static/
+│   └── css/
+│       └── chat.css       # Styling for chat interface
 ├── DjangoForAI/
 │   ├── settings.py        # Django settings
 │   └── urls.py            # Root URL configuration
-└── manage.py              # Django management script
+├── manage.py              # Django management script
+└── pyproject.toml         # Python project dependencies for uv
 ```
