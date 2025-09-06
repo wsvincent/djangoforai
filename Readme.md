@@ -2,16 +2,15 @@
 
 A real-time streaming chat application built with Django, HTMX, and Server-Sent Events (SSE) to mimic popular LLMs like ChatGPT, Claude, etc. It integrates with local LLMs via Ollama.
 
-https://github.com/user-attachments/assets/d1a018e5-27ba-452f-8155-6709b24edc3a
+<https://github.com/user-attachments/assets/d1a018e5-27ba-452f-8155-6709b24edc3a>
 
 ## Features
 
 - 🚀 Real-time streaming responses using Server-Sent Events (SSE)
-- 🤖 Local LLM integration via Ollama (Gemma 3 4B)
+- 🤖 Local LLM integration via Ollama (Gemma 3:4B)
 - 📝 Markdown support with syntax highlighting
 - 💬 Conversation history and context management
 - 🎨 Clean, responsive UI with HTMX
-- 🔄 No heavy JavaScript frameworks required
 
 ## Installation
 
@@ -19,7 +18,7 @@ https://github.com/user-attachments/assets/d1a018e5-27ba-452f-8155-6709b24edc3a
 
 Download and install the [Ollama desktop app](https://ollama.com/) for your platform.
 
-Once installed, pull the Gemma 3 4B model (3.3GB):
+Once installed, pull the Gemma 3:4B model (3.3GB):
 
 ```bash
 ollama pull gemma3:4b
