@@ -40,5 +40,4 @@ static_root/
 # Media files
 media_root/
 
-
-
+.venv/
