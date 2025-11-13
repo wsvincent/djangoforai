@@ -2,6 +2,8 @@
 
 A real-time streaming chat application built with Django, HTMX, and Server-Sent Events (SSE) to mimic popular LLMs like ChatGPT, Claude, etc. It integrates with local LLMs via Ollama.
 
+This was demonstrated during a talk at DjangoCon US 2025. You can see the [video version here](https://youtu.be/zIQZXr6XIU0?si=m5pbACJzK3BfMDEu) or the text-based version here](https://wsvincent.com/django-for-ai-djangocon/).
+
 <https://github.com/user-attachments/assets/d1a018e5-27ba-452f-8155-6709b24edc3a>
 
 ## Features
